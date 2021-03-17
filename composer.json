@@ -15,5 +15,13 @@
             "DMatrix\\Telex\\": "src/"
         }
     },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "DMatrix\\Telex\\Providers\\TelexServiceProvider"
+            ],
+            "dont-discover": []
+        }
+    },
     "require": {}
 }
