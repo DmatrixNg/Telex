@@ -1,0 +1,19 @@
+{
+    "name": "dmatrix/telex",
+    "description": "email/SMS management system",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Elijah Okokon",
+            "email": "okoelijah@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "DMatrix\\Telex\\": "src/"
+        }
+    },
+    "require": {}
+}
