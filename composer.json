@@ -18,7 +18,8 @@
     "extra": {
         "laravel": {
             "providers": [
-                "DMatrix\\Telex\\Providers\\TelexServiceProvider"
+                "DMatrix\\Telex\\Providers\\TelexServiceProvider",
+                "DMatrix\\Telex\\Providers\\TelexServiceProviderPackages"
             ],
             "dont-discover": []
         }
