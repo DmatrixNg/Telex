@@ -4,6 +4,7 @@ namespace DMatrix\Telex\Repository;
 use DMatrix\Telex\Repository\Contracts\TelexServiceInterface;
 use GuzzleHttp\Client as RequestClient;
 use GuzzleHttp\Promise;
+use Illuminate\Support\Facades\Log;
 
 class Telex implements TelexServiceInterface
 {
@@ -31,6 +32,7 @@ class Telex implements TelexServiceInterface
         );
         $payload = [];
         $payload['template_uuid'] = $params['params']['message_type']['email_template_id'];
+        $payload['sender'] = $params['params']['message_type']['sender_email'];
         $payload['sender_email'] = $params['params']['message_type']['sender_email'];
         $payload['placeholders'] = $params['params'];
         $payload['attachment'] = $params['attachments'];
