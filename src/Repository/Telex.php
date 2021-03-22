@@ -3,8 +3,6 @@ namespace DMatrix\Telex\Repository;
 
 use DMatrix\Telex\Repository\Contracts\TelexServiceInterface;
 use GuzzleHttp\Client as RequestClient;
-use GuzzleHttp\Promise;
-use Illuminate\Support\Facades\Log;
 
 class Telex implements TelexServiceInterface
 {
@@ -43,30 +41,17 @@ class Telex implements TelexServiceInterface
         $receiverCount = count($receiver);
 
         if ($receiverCount > 1) {
-            $promises = [];
             $tempParams = $payload;
+            $customerData = [];
             for ($i = 0; $i < $receiverCount; $i++) {
                 $tempParams['receiver_email'] = $receiver[$i];
-                $customerData = [
+                $customerData[] = [
                     'name' => $params['receiver_name'] ?? '',
                     'email' => $tempParams['receiver_email']
                 ];
-                $payload['customers'] = [$customerData];
+                $payload['customers'] = $customerData;
 
-                if (!$attachment) {
-
-                    $payload = $this->getPayload("form_params",$payload);
-
-                     $promises[] = $client->requestAsync('POST', $url,  $payload );
-                } else {
-
-                    $newPayload = $this->modifyPayload($tempParams);
-                    $payload = $this->getPayload('multipart',$newPayload );
-                    $promises[] = $client->requestAsync('POST', $url, $payload);
-                }
             }
-
-            return Promise\unwrap($promises);
         } else {
             $payload['receiver_email'] = $receiver[0];
             $customerData = [
@@ -74,6 +59,7 @@ class Telex implements TelexServiceInterface
                 'email' => $payload['receiver_email']
             ];
             $payload['customers'] = [$customerData];
+        }
             if (!$attachment) {
 
                 $payload = $this->getPayload("form_params",$payload);
@@ -87,7 +73,7 @@ class Telex implements TelexServiceInterface
             $res = $client->request('POST', $url, $payload);
             return $res->getStatusCode();
 
-        }
+
     }
 
     public function sendSMS($params)
@@ -112,26 +98,27 @@ class Telex implements TelexServiceInterface
         $receiverCount = count($receiver);
 
         if ($receiverCount > 1) {
-            $promises = [];
             $tempParams = $payload;
+            $customerData = [];
             for ($i = 0; $i < $receiverCount; $i++) {
                 $tempParams['receiver'] = $receiver[$i];
                 $customerData = [
                     'name' => $params['receiver_name'] ?? '',
-                    'email' => $tempParams['receiver_email'] ?? ""
+                    'email' => $tempParams['receiver_email'] ?? "",
+                    'phone' => $tempParams['receiver']
                 ];
-                $tempParams['customers'] = [$customerData];
-                $promises[] = $client->requestAsync('POST', $url, $this->getPayload('form_params',$tempParams));
+                $tempParams['customers'] = $customerData;
             }
 
-            return  Promise\unwrap($promises);
         } else {
             $payload['receiver'] = $receiver[0];
             $customerData = [
                 'name' => $params['receiver_name'] ?? '',
-                'email' => $payload['receiver_email'] ?? ""
+                'email' => $payload['receiver_email'] ?? "",
+                'phone' => $payload['receiver']
             ];
             $payload['customers'] = [$customerData];
+
             $res = $client->request('POST', $url, $this->getPayload('form_params',  $payload));
             return $res->getStatusCode();
         }
