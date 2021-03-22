@@ -58,7 +58,7 @@ class Telex implements TelexServiceInterface
                 'name' => $params['receiver_name'] ?? '',
                 'email' => $payload['receiver_email']
             ];
-            $payload['customers'] = [$customerData];
+            $payload['customers'] = $customerData;
         }
             if (!$attachment) {
 
@@ -117,7 +117,7 @@ class Telex implements TelexServiceInterface
                 'email' => $payload['receiver_email'] ?? "",
                 'phone' => $payload['receiver']
             ];
-            $payload['customers'] = [$customerData];
+            $payload['customers'] = $customerData;
 
             $res = $client->request('POST', $url, $this->getPayload('form_params',  $payload));
             return $res->getStatusCode();
