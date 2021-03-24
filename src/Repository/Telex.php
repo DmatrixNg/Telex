@@ -3,6 +3,8 @@ namespace DMatrix\Telex\Repository;
 
 use DMatrix\Telex\Repository\Contracts\TelexServiceInterface;
 use GuzzleHttp\Client as RequestClient;
+use Illuminate\Support\Facades\Log;
+
 
 class Telex implements TelexServiceInterface
 {
@@ -58,7 +60,7 @@ class Telex implements TelexServiceInterface
                 'name' => $params['receiver_name'] ?? '',
                 'email' => $payload['receiver_email']
             ];
-            $payload['customers'] = $customerData;
+            $payload['customers'] = array($customerData);
         }
             if (!$attachment) {
 
@@ -117,7 +119,7 @@ class Telex implements TelexServiceInterface
                 'email' => $payload['receiver_email'] ?? "",
                 'phone' => $payload['receiver']
             ];
-            $payload['customers'] = $customerData;
+            $payload['customers'] = array($customerData);
 
             $res = $client->request('POST', $url, $this->getPayload('form_params',  $payload));
             return $res->getStatusCode();
@@ -172,6 +174,7 @@ class Telex implements TelexServiceInterface
     protected function getPayload($type, $payload)
     {
         // Change this to the format your API accepts
+
         return [
             $type => $payload
         ];
