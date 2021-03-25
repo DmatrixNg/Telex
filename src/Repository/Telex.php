@@ -48,7 +48,7 @@ class Telex implements TelexServiceInterface
                 $tempParams['receiver_email'] = $receiver[$i];
                 $customerData[] = [
                     'name' => $params['receiver_name'] ?? '',
-                    'email' => str_replace_last(";","",$tempParams['receiver_email'])
+                    'email' => str_replace_last(";","",$tempParams['receiver_email'] ?? "")
                 ];
             }
                 $payload['customers'] = $customerData;
@@ -57,7 +57,7 @@ class Telex implements TelexServiceInterface
             $payload['receiver_email'] = $receiver[0];
             $customerData = [
                 'name' => $params['receiver_name'] ?? '',
-                'email' => str_replace_last(";","",$payload['receiver_email'])
+                'email' => str_replace_last(";","",$payload['receiver_email'] ?? "")
             ];
             $payload['customers'] = array($customerData);
         }
@@ -105,7 +105,7 @@ class Telex implements TelexServiceInterface
                 $tempParams['receiver'] = $receiver[$i];
                 $customerData[] = [
                     'name' => $params['receiver_name'] ?? '',
-                    'email' => str_replace_last(";","",$tempParams['receiver_email']) ?? "",
+                    'email' => str_replace_last(";","",$tempParams['receiver_email'] ?? ""),
                     'phone' => $tempParams['receiver']
                 ];
             }
@@ -115,7 +115,7 @@ class Telex implements TelexServiceInterface
             $payload['receiver'] = $receiver[0];
             $customerData = [
                 'name' => $params['receiver_name'] ?? '',
-                'email' => str_replace_last(";","",$payload['receiver_email']) ?? "",
+                'email' => str_replace_last(";","",$payload['receiver_email'] ?? ""),
                 'phone' => $payload['receiver']
             ];
             $payload['customers'] = array($customerData);
