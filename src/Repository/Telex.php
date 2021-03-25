@@ -3,7 +3,6 @@ namespace DMatrix\Telex\Repository;
 
 use DMatrix\Telex\Repository\Contracts\TelexServiceInterface;
 use GuzzleHttp\Client as RequestClient;
-use Illuminate\Support\Facades\Log;
 
 
 class Telex implements TelexServiceInterface
@@ -49,16 +48,16 @@ class Telex implements TelexServiceInterface
                 $tempParams['receiver_email'] = $receiver[$i];
                 $customerData[] = [
                     'name' => $params['receiver_name'] ?? '',
-                    'email' => $tempParams['receiver_email']
+                    'email' => str_replace_last(";","",$tempParams['receiver_email'])
                 ];
+            }
                 $payload['customers'] = $customerData;
 
-            }
         } else {
             $payload['receiver_email'] = $receiver[0];
             $customerData = [
                 'name' => $params['receiver_name'] ?? '',
-                'email' => $payload['receiver_email']
+                'email' => str_replace_last(";","",$payload['receiver_email'])
             ];
             $payload['customers'] = array($customerData);
         }
@@ -71,7 +70,6 @@ class Telex implements TelexServiceInterface
 
             $newPayload = $this->modifyPayload($payload);
             $payload = $this->getPayload('multipart', $newPayload );
-
             $res = $client->request('POST', $url, $payload);
             return $res->getStatusCode();
 
@@ -80,6 +78,7 @@ class Telex implements TelexServiceInterface
 
     public function sendSMS($params)
     {
+
         $receiver = rtrim($params['to'], ",");
         $receiver = explode(',', $receiver);
         $client = new RequestClient(
@@ -104,26 +103,26 @@ class Telex implements TelexServiceInterface
             $customerData = [];
             for ($i = 0; $i < $receiverCount; $i++) {
                 $tempParams['receiver'] = $receiver[$i];
-                $customerData = [
+                $customerData[] = [
                     'name' => $params['receiver_name'] ?? '',
-                    'email' => $tempParams['receiver_email'] ?? "",
+                    'email' => str_replace_last(";","",$tempParams['receiver_email']) ?? "",
                     'phone' => $tempParams['receiver']
                 ];
-                $tempParams['customers'] = $customerData;
             }
+            $payload['customers'] = $customerData;
 
         } else {
             $payload['receiver'] = $receiver[0];
             $customerData = [
                 'name' => $params['receiver_name'] ?? '',
-                'email' => $payload['receiver_email'] ?? "",
+                'email' => str_replace_last(";","",$payload['receiver_email']) ?? "",
                 'phone' => $payload['receiver']
             ];
             $payload['customers'] = array($customerData);
 
-            $res = $client->request('POST', $url, $this->getPayload('form_params',  $payload));
-            return $res->getStatusCode();
         }
+        $res = $client->request('POST', $url, $this->getPayload('form_params',  $payload));
+        return $res->getStatusCode();
     }
 
     public function modifyPayload($params)
@@ -174,7 +173,6 @@ class Telex implements TelexServiceInterface
     protected function getPayload($type, $payload)
     {
         // Change this to the format your API accepts
-
         return [
             $type => $payload
         ];
