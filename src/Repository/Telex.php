@@ -34,7 +34,7 @@ class Telex implements TelexServiceInterface
         $payload['sender'] = $params['params']['message_type']['sender_email'];
         $payload['sender_email'] = $params['params']['message_type']['sender_email'];
         $payload['placeholders'] = $params['params'];
-        $payload['attachment'] = $params['attachments'];
+        $payload['attachment'] = $attachment;
         $payload['message_type'] = "email";
         $url = config('services.telex.endpoint');
 
