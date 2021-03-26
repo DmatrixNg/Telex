@@ -131,7 +131,7 @@ class Telex implements TelexServiceInterface
         //loop through the params
         foreach ($params as $name => $content) {
             //check if param is an attachment
-            if ($name == 'attachment') {
+            if ($name == 'attachments') {
                 if(is_array($content)) {
                     foreach($content as $key => $attach) {
 
