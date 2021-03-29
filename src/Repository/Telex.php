@@ -55,6 +55,7 @@ class Telex implements TelexServiceInterface
             if (!$attachment) {
                 $promises[] = $client->requestAsync('POST', $url, ['form_params' => $tempParams]);
             } else {
+
                 $newPayload = $this->modifyPayload($tempParams);
 
                 $promises[] = $client->requestAsync('POST', $url, ['multipart' => $newPayload]);
@@ -120,7 +121,6 @@ class Telex implements TelexServiceInterface
         $multipart = [];
         //loop through the params
         foreach ($params as $name => $content) {
-
             if (!is_array($content)) {
                 $multipart[] = ['name' => $name, 'contents' => $content];
             } else {
@@ -134,13 +134,17 @@ class Telex implements TelexServiceInterface
                     if (!is_array($value)) {
                         $multipart[] = ['name' => $name . '[' . $placeholder . ']', 'contents' => $value];
                     } else {
-                        foreach ($value as $detail) {
+
+                        foreach ($value as $key => $detail) {
                             //looping through the value, the detail can also be an array e.g [roomname => 'deluxe']
                             if (is_array($detail)) {
                                 foreach ($detail as $infoKey => $info) {
                                     $multipart[] = ['name' => $name . '[' . $placeholder . '][' . $infoKey . ']', 'contents' => $info];
                                 }
+                            } else {
+                                $multipart[] = ['name' => $name . '[' . $placeholder . ']['. $key. ']', 'contents' => $detail];
                             }
+
                         }
                     }
                 }
