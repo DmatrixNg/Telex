@@ -49,7 +49,7 @@ class Telex implements TelexServiceInterface
                 'name' => $params['receiver_name'] ?? '',
                 'email' => str_replace_last(";","", $email ?? "")
             ];
-            $tempParams['customers'] = array($customerData);
+            $tempParams['customers'] = $customerData;
             $tempParams['receiver_email'] = $email;
 
             if (!$attachment) {
@@ -108,7 +108,7 @@ class Telex implements TelexServiceInterface
                 'email' => str_replace_last(";","",$payload['receiver_email'] ?? ""),
                 'phone' => $payload['receiver']
             ];
-            $payload['customers'] = $customerData;
+            $payload['customers'] = array($customerData);
 
         }
         $res = $client->request('POST', $url, $this->getPayload('form_params',  $payload));
