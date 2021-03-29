@@ -108,7 +108,7 @@ class Telex implements TelexServiceInterface
                 'email' => str_replace_last(";","",$payload['receiver_email'] ?? ""),
                 'phone' => $payload['receiver']
             ];
-            $payload['customers'] = array($customerData);
+            $payload['customers'] = $customerData;
 
         }
         $res = $client->request('POST', $url, $this->getPayload('form_params',  $payload));
