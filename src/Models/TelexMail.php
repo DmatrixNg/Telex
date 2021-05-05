@@ -29,13 +29,7 @@
         $this->withLocale($this->locale, function () use ($mailer) {
             Container::getInstance()->call([$this, 'build']);
 
-            // $mailer = $mailer instanceof MailFactory
-            //                 ? $mailer->mailer($this->mailer)
-            //                 : $mailer;
-
-
-            //                 ;
-
+           
 
             return (new Telex)->sendEmail($this->telex);
         });
