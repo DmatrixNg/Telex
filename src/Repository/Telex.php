@@ -3,7 +3,8 @@ namespace DMatrix\Telex\Repository;
 
 use DMatrix\Telex\Repository\Contracts\TelexServiceInterface;
 use GuzzleHttp\Client as RequestClient;
-
+use GuzzleHttp\Promise;
+use Illuminate\Support\Arr;
 
 class Telex implements TelexServiceInterface
 {
@@ -33,47 +34,37 @@ class Telex implements TelexServiceInterface
         $payload['template_uuid'] = $params['params']['message_type']['email_template_id'];
         $payload['sender'] = $params['params']['message_type']['sender_email'];
         $payload['sender_email'] = $params['params']['message_type']['sender_email'];
+
         $payload['placeholders'] = $params['params'];
-        $payload['attachment'] = $params['attachments'];
+
+        $payload['attachments'] =  $attachment ? $params['attachments'] : [];
         $payload['message_type'] = "email";
         $url = config('services.telex.endpoint');
 
 
-        $receiverCount = count($receiver);
-
-        if ($receiverCount > 1) {
+        $promises = [];
+        array_walk($receiver, function($email) use ($payload, $attachment, $client, $url, &$promises) {
             $tempParams = $payload;
-            $customerData = [];
-            for ($i = 0; $i < $receiverCount; $i++) {
-                $tempParams['receiver_email'] = $receiver[$i];
-                $customerData[] = [
-                    'name' => $params['receiver_name'] ?? '',
-                    'email' => str_replace_last(";","",$tempParams['receiver_email'] ?? "")
-                ];
-            }
-                $payload['customers'] = $customerData;
-
-        } else {
-            $payload['receiver_email'] = $receiver[0];
-            $customerData = [
+            $customerData[] = [
                 'name' => $params['receiver_name'] ?? '',
-                'email' => str_replace_last(";","",$payload['receiver_email'] ?? "")
+                'email' => str_replace_last(";","", $email ?? "")
             ];
-            $payload['customers'] = array($customerData);
-        }
-            if (!$attachment) {
+            $tempParams['customers'] = $customerData;
+            $tempParams['receiver_email'] = $email;
 
-                $payload = $this->getPayload("form_params",$payload);
-                $res = $client->request('POST', $url, $payload);
-                return $res->getStatusCode();
+            if (!$attachment) {
+                $promises[] = $client->requestAsync('POST', $url, ['form_params' => $tempParams]);
+            } else {
+
+                $newPayload = $this->modifyPayload($tempParams);
+
+                $promises[] = $client->requestAsync('POST', $url, ['multipart' => $newPayload]);
             }
 
-            $newPayload = $this->modifyPayload($payload);
-            $payload = $this->getPayload('multipart', $newPayload );
-            $res = $client->request('POST', $url, $payload);
-            return $res->getStatusCode();
+        });
 
-
+        $results = Promise\unwrap($promises);
+        return $results[0]->getStatusCode();
     }
 
     public function sendSMS($params)
@@ -130,36 +121,33 @@ class Telex implements TelexServiceInterface
         $multipart = [];
         //loop through the params
         foreach ($params as $name => $content) {
-            //check if param is an attachment
-            if ($name == 'attachment') {
-                if(is_array($content)) {
-                    foreach($content as $key => $attach) {
-
-                        $multipart[] = ['name' => $name[$key], 'contents' => $attach['file'], 'filename' => time() . '.'.$attach['extension']];
-                    }
+            if (!is_array($content)) {
+                $multipart[] = ['name' => $name, 'contents' => $content];
+            } else {
+                if ($name == 'attachments') {
+                    array_walk($content, function($attach, $key) use (&$multipart, $name) {
+                        $multipart[] = ['name' => $name.'['.$key.']', 'contents' => $attach['file'], 'filename' => time() . '.'.$attach['extension']];
+                    });
                 }
-            }
-            //if the content is an array loop through it
-            //this can be used for placeholders
-            if (is_array($content)) {
+
                 foreach ($content as $placeholder => $value) {
-                    //check if the value is also an array then loop through it
-                    //for example rooms is an array
-                    if (is_array($value)) {
-                        foreach ($value as $detail) {
+                    if (!is_array($value)) {
+                        $multipart[] = ['name' => $name . '[' . $placeholder . ']', 'contents' => $value];
+                    } else {
+
+                        foreach ($value as $key => $detail) {
                             //looping through the value, the detail can also be an array e.g [roomname => 'deluxe']
                             if (is_array($detail)) {
                                 foreach ($detail as $infoKey => $info) {
                                     $multipart[] = ['name' => $name . '[' . $placeholder . '][' . $infoKey . ']', 'contents' => $info];
                                 }
+                            } else {
+                                $multipart[] = ['name' => $name . '[' . $placeholder . ']['. $key. ']', 'contents' => $detail];
                             }
+
                         }
-                    } else {
-                        $multipart[] = ['name' => $name . '[' . $placeholder . ']', 'contents' => $value];
                     }
                 }
-            } else {
-                $multipart[] = ['name' => $name, 'contents' => $content];
             }
         }
 
