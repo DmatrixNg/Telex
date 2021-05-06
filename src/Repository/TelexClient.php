@@ -46,7 +46,7 @@ class TelexClient
         return $multipartArray;
     }
 
-    public function sendEvent(string $template_id, array $customer, array $placeholderData, array $options = [])
+    public function sendEmail(string $template_id, array $customer, array $placeholderData, array $options = [])
     {
         $url = "{$this->telexDomain}/api/send-message";
 
@@ -133,5 +133,63 @@ class TelexClient
 
             return $response;
         }
+    }
+
+    public function sendSMS($params)
+    {
+
+        $receiver = rtrim($params['to'] ?? $params['receiver'], ",");
+        $receiver = explode(',', $receiver);
+        $client = new Client(
+            [
+                'headers' => [
+                    'ORGANIZATION-KEY' => $this->key,
+                    'ORGANIZATION-ID' => $this->id
+                ]
+            ]
+        );
+        $data = [];
+        $data['template_uuid'] = $params['params']['message_type']['sms_template_id'] ?? $params['template_id'];
+        $data['sender'] = $params['sender'] ?? '';
+        $data['placeholders'] = $params['params'] ?? $params['placeholders'];
+        $data['message_type'] = "sms";
+        $url = "{$this->telexDomain}/api/send-message";
+
+        $receiverCount = count($receiver);
+
+        if ($receiverCount > 1) {
+            $tempParams = $data;
+            $customerData = [];
+            for ($i = 0; $i < $receiverCount; $i++) {
+                $tempParams['receiver'] = $receiver[$i];
+                $customerData[] = [
+                    'name' => $params['receiver_name'] ?? '',
+                    'email' => str_replace_last(";","",$tempParams['receiver_email'] ?? ""),
+                    'phone' => $tempParams['receiver']
+                ];
+            }
+            $data['customers'] = $customerData;
+
+        } else {
+            $data['receiver'] = $receiver[0];
+            $customerData = [
+                'name' => $params['receiver_name'] ?? '',
+                'email' => str_replace_last(";","",$data['receiver_email'] ?? ""),
+                'phone' => $data['receiver']
+            ];
+            $data['customers'] = array($customerData);
+
+        }
+        $payload = [
+            'json' => $data
+        ];
+
+        $response = $client->request('POST', $url, $payload);
+
+            $response = [
+                'status' => $response->getStatusCode() === 201 ? 'ok' : 'error'
+            ];
+
+            return $response;
     }
 }

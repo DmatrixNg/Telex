@@ -24,5 +24,7 @@
             "dont-discover": []
         }
     },
-    "require": {}
+    "require": {
+        "illuminate/mail": "9.x-dev"
+    }
 }
