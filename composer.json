@@ -10,6 +10,7 @@
         }
     ],
     "minimum-stability": "dev",
+    "prefer-stable": true,
     "autoload": {
         "psr-4": {
             "DMatrix\\Telex\\": "src/"
@@ -25,6 +26,6 @@
         }
     },
     "require": {
-        "illuminate/mail": "9.x-dev"
+        "illuminate/mail": "^8.40"
     }
 }
