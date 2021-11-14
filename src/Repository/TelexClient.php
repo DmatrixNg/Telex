@@ -58,7 +58,7 @@ class TelexClient
         $organizationId = $options['organization_id'] ?? $this->organizationId;
 
         $data = [
-            'customers' => array($customer) ?? [],
+            'customers' => is_array($customer[0]) ? $customer : array($customer) ?? [],
             'placeholders' => $placeholderData ?? [],
             'attachments' => $attachments ?? [],
             'event_type' => $metadata['metadata']['channel'],
